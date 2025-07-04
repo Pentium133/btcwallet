@@ -5,6 +5,8 @@ require 'net/http'
 require 'uri'
 
 class WalletApp
+  WALLET_FILE = "data/wallet.json"
+
   def run
     loop do
       puts "\n1. Создать кошелек"
@@ -26,6 +28,16 @@ class WalletApp
 
   private
 
+  def save_wallet(data)
+    FileUtils.mkdir_p("data")
+    File.write(WALLET_FILE, JSON.pretty_generate(data))
+  end
+
+  def load_wallet
+    return nil unless File.exist?(WALLET_FILE)
+    JSON.parse(File.read(WALLET_FILE))
+  end
+
   def create
     Bitcoin.chain_params = :signet
     key = Bitcoin::Key.generate
@@ -33,22 +45,24 @@ class WalletApp
     pubkey = key.pubkey
     address = key.to_p2wpkh
 
-    wallet_dir = "data"
-    FileUtils.mkdir_p(wallet_dir)
-
-    wallet_file = File.join(wallet_dir, "wallet.json")
     wallet_data = {
       wif: wif,
       pubkey: pubkey,
       address: address
     }
-    File.write(wallet_file, JSON.pretty_generate(wallet_data))
+
+    save_wallet(wallet_data)
+    puts "Кошелек создан! Адрес: #{address}"
   end
 
   def get_balance
-    wallet_dir = "data"
-    wallet_file = File.join(wallet_dir, "wallet.json")
-    address = JSON.parse(File.read(wallet_file))['address']
+    wallet_data = load_wallet
+    unless wallet_data
+      puts "Кошелек не найден! Создайте кошелек."
+      return
+    end
+
+    address = wallet_data['address']
     puts "Address: #{address}"
 
     # RPC параметры
