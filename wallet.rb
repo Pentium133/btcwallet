@@ -39,6 +39,10 @@ class WalletApp
   end
 
   def create
+    if File.exist?(WALLET_FILE)
+      puts "Кошелек уже существует!"
+      return
+    end
     Bitcoin.chain_params = :signet
     key = Bitcoin::Key.generate
     wif = key.to_wif
