@@ -23,7 +23,13 @@ class WalletApp
       when '2'
         get_balance
       when '3'
-        send_to_address
+        print 'Введите адрес получателя (Enter для tb1q9y30addnhhr0hrqxstz2jtwnle7lgvvgae2lh9): '
+        to_address = gets.chomp.strip
+        to_address = 'tb1q9y30addnhhr0hrqxstz2jtwnle7lgvvgae2lh9' if to_address.empty?
+        print 'Введите сумму в BTC (Enter для 0.0003): '
+        amount_input = gets.chomp.strip
+        amount_btc = amount_input.empty? ? 0.0003 : amount_input.to_f
+        send_to_address(to_address, amount_btc)
       when '5'
         break
       else
@@ -103,7 +109,7 @@ class WalletApp
   end
 
   # Создание и отправка raw-транзакции через mempool.space
-  def send_to_address(to_address = 'tb1q9y30addnhhr0hrqxstz2jtwnle7lgvvgae2lh9', amount_btc = 0.0003)
+  def send_to_address(to_address, amount_btc)
     wallet_data = load_wallet
     unless wallet_data && wallet_data['wif'] && wallet_data['address']
       puts 'Нет приватного ключа или адреса в кошельке!'
