@@ -1,3 +1,5 @@
-source "https://rubygems.org"
+# frozen_string_literal: true
 
-gem "bitcoinrb"
+source 'https://rubygems.org'
+
+gem 'bitcoinrb'
