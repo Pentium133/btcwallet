@@ -1,2 +1,2 @@
-TABLES
-API
+[TABLES](tables.md)
+[API](api.md)
