@@ -127,7 +127,7 @@ class WalletApp
     utxo_txid = utxo[:txid]
     utxo_vout = utxo[:vout]
     utxo_amount = utxo[:value]
-    fee = 10_000
+    fee = 1_000 # 0.00001 BTC
     amount = (amount_btc * 100_000_000).to_i
 
     if utxo_amount < amount + fee
@@ -135,7 +135,6 @@ class WalletApp
       return
     end
 
-    Bitcoin::Tx.new
     raw_hex = create_raw_tx(wif, utxo_txid, utxo_vout, utxo_amount, to_address, amount, fee, from_address)
     puts "Raw hex транзакции: #{raw_hex}"
 
