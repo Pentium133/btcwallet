@@ -127,16 +127,26 @@ class WalletApp
     utxo_txid = utxo[:txid]
     utxo_vout = utxo[:vout]
     utxo_amount = utxo[:value]
-    fee = 1_000 # 0.00001 BTC
     amount = (amount_btc * 100_000_000).to_i
+    sats_per_vbyte = 1
+
+    # Сначала собираем tx с fee=0 для оценки размера
+    dummy_fee = 0
+    raw_hex = create_raw_tx(wif, utxo_txid, utxo_vout, utxo_amount, to_address, amount, dummy_fee, from_address)
+    raw_bytes = [raw_hex].pack('H*')
+    tx = Bitcoin::Tx.parse_from_payload(raw_bytes)
+    vbytes = tx.to_payload.bytesize
+    fee = vbytes * sats_per_vbyte
 
     if utxo_amount < amount + fee
-      puts 'Недостаточно средств для отправки!'
+      puts "Недостаточно средств для отправки! На балансе: #{utxo_amount} сатоши, требуется: #{amount + fee} сатоши (сумма + комиссия)"
       return
     end
 
+    # Теперь собираем tx с правильной комиссией
     raw_hex = create_raw_tx(wif, utxo_txid, utxo_vout, utxo_amount, to_address, amount, fee, from_address)
     puts "Raw hex транзакции: #{raw_hex}"
+    puts "Размер транзакции: #{vbytes} vbytes, комиссия: #{fee} сатоши (#{'%.8f' % (fee/100_000_000.0)} BTC)"
 
     url = URI('https://mempool.space/signet/api/tx')
     req = Net::HTTP::Post.new(url)
